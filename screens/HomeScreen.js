@@ -26,7 +26,7 @@ export default class HomeScreen extends React.Component {
 
           <View style={styles.welcomeContainer}>
             <Image
-              source={require('../assets/images/expo-wordmark.png')}
+              source={require('../assets/images/skipio_full_logo.png')}
               style={styles.welcomeImage}
             />
           </View>

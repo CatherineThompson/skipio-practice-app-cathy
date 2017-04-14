@@ -19,7 +19,7 @@ class AppContainer extends React.Component {
   async _loadAssetsAsync() {
     try {
       await cacheAssetsAsync({
-        images: [require('./assets/images/expo-wordmark.png')],
+        images: [require('./assets/images/skipio_full_logo.png')],
         fonts: [
           FontAwesome.font,
         ],
