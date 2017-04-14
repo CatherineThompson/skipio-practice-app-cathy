@@ -6,6 +6,7 @@ import {
   View
 } from 'react-native'
 import { fetchContacts } from '../api/contacts'
+import ContactContainer from '../components/ContactContainer'
 
 export default class ContactsScreen extends React.Component {
   static route = {
@@ -51,18 +52,24 @@ export default class ContactsScreen extends React.Component {
           contentContainerStyle={this.props.route.getContentContainerStyle()}>
           {
             contactsList.map((contact, i) => {
-              return <Text key={i}>{contact.first_name}</Text>
+              return <ContactContainer
+                key={i}
+                contact={contact}
+                onPress={() => this._handleContactPress(contact)} />
             })
           }
         </ScrollView>
       )
     }
   }
+
+  _handleContactPress = (contact) => {
+    this.props.navigator.push('contactDetails', {contact: contact})
+  }
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    paddingTop: 15,
+    flex: 1
   }
 })
