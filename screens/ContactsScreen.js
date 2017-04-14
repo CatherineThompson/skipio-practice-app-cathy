@@ -8,13 +8,13 @@ export default class ContactsScreen extends React.Component {
     },
   };
 
-  render() {
+  render () {
     return (
       <ScrollView
         style={styles.container}
         contentContainerStyle={this.props.route.getContentContainerStyle()}>
       </ScrollView>
-    );
+    )
   }
 }
 
@@ -22,5 +22,5 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 15,
-  },
-});
+  }
+})

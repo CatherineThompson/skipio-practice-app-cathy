@@ -136,8 +136,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   welcomeImage: {
-    width: 140,
-    height: 38,
+    width: 300,
     resizeMode: 'contain',
     marginTop: 3,
     marginLeft: -10,
