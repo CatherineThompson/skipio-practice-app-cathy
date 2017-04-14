@@ -35,11 +35,12 @@ export default class ContactsScreen extends React.Component {
   }
 
   render () {
-    if (this.state.status === 'loading') {
+    const { status, contactsList } = this.state
+    if (status === 'loading') {
       return (
         <View><Text>'loading'</Text></View>
       )
-    } else if (this.state.status === 'error') {
+    } else if (status === 'error') {
       return (
         <View><Text>'error'</Text></View>
       )
@@ -48,7 +49,11 @@ export default class ContactsScreen extends React.Component {
         <ScrollView
           style={styles.container}
           contentContainerStyle={this.props.route.getContentContainerStyle()}>
-          <Text>done</Text>
+          {
+            contactsList.map((contact, i) => {
+              return <Text key={i}>{contact.first_name}</Text>
+            })
+          }
         </ScrollView>
       )
     }
