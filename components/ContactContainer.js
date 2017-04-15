@@ -5,6 +5,7 @@ import {
   Image,
   TouchableOpacity
 } from 'react-native'
+import Colors from '../constants/Colors'
 
 const ContactContainer = ({contact, onPress}) => (
   <TouchableOpacity style={styles.container} onPress={onPress}>
@@ -29,6 +30,7 @@ const styles = StyleSheet.create({
     margin: 12,
     resizeMode: 'contain',
     borderWidth: 1,
-    borderRadius: 25
+    borderRadius: 25,
+    borderColor: Colors.backgroudGray
   }
 })

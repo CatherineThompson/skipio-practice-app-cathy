@@ -6,6 +6,7 @@ import {
   Text,
   View,
 } from 'react-native'
+import Colors from '../constants/Colors'
 
 export default class HomeScreen extends Component {
   static route = {
@@ -28,8 +29,8 @@ export default class HomeScreen extends Component {
             />
           </View>
 
-          <View style={styles.getStartedContainer}>
-            <Text style={styles.getStartedText}>
+          <View style={styles.subHeaderContainer}>
+            <Text style={styles.subHeaderText}>
               Scaled sms messaging - with that personal touch
             </Text>
           </View>
@@ -59,13 +60,13 @@ const styles = StyleSheet.create({
     marginTop: 3,
     marginLeft: -10
   },
-  getStartedContainer: {
+  subHeaderContainer: {
     alignItems: 'center',
     marginHorizontal: 50
   },
-  getStartedText: {
+  subHeaderText: {
     fontSize: 17,
-    color: 'rgba(96,100,109, 1)',
+    color: Colors.backgroudGray,
     lineHeight: 23,
     textAlign: 'center'
   }

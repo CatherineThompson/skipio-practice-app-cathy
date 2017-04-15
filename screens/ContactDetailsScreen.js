@@ -9,6 +9,7 @@ import {
 } from 'react-native'
 import { sendMessage } from '../api/contacts.js'
 import { FontAwesome } from '@expo/vector-icons'
+import Colors from '../constants/Colors'
 
 export default class ContactDetailsScreen extends Component {
   static route = {
@@ -23,7 +24,6 @@ export default class ContactDetailsScreen extends Component {
 
   render () {
     const { contact } = this.props
-    // sendMessage(contact, 'from my app')
     return (
       <View style={styles.container}>
 
@@ -56,11 +56,11 @@ export default class ContactDetailsScreen extends Component {
           </View>
           <TouchableOpacity
             style={styles.sendButtonContainer}
-            onPress={() => {}}>
+            onPress={this._handleSendMessage}>
             <FontAwesome
               name='send'
               size={24}
-              style={{}}/>
+              style={{color: Colors.tintColor}}/>
           </TouchableOpacity>
         </View>
 
@@ -71,12 +71,28 @@ export default class ContactDetailsScreen extends Component {
   _handleTextChange = (message) => {
     this.setState({ message: message })
   }
+
+  _handleSendMessage = async () => {
+    try {
+      const messageSent = await sendMessage(this.props.contact, this.state.message)
+      if (messageSent.success) {
+        this.props.navigator.showLocalAlert('sent', {
+          text: { color: '#000' },
+          container: { backgroundColor: Colors.tintColor },
+        })
+      }
+    } catch (e) {
+      this.props.navigator.showLocalAlert(e.message, {
+        text: { color: '#000' },
+        container: { backgroundColor: 'red' },
+      })
+    }
+  }
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'space-between'
   },
   avatarImage: {
     width: 70,
@@ -84,7 +100,8 @@ const styles = StyleSheet.create({
     margin: 12,
     resizeMode: 'contain',
     borderWidth: 1,
-    borderRadius: 35
+    borderRadius: 35,
+    borderColor: Colors.backgroudGray
   },
   messageContainer: {
     flexDirection: 'row',
