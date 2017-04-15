@@ -7,15 +7,15 @@ import {
   TextInput,
   TouchableOpacity,
   Animated,
-  ScrollView
+  ListView
 } from 'react-native'
 import { sendMessage, messagesList } from '../api/contacts'
 import { FontAwesome } from '@expo/vector-icons'
 import Colors from '../constants/Colors'
-import LoadingScreen from '../components/LoadingScreen'
 import { InboundMessage, OutboundMessage } from '../components/MessageBubble'
 import Layout from '../constants/Layout'
 import KeyboardSpacer from 'react-native-keyboard-spacer'
+import InvertibleScrollView from 'react-native-invertible-scroll-view'
 
 export default class ContactDetailsScreen extends Component {
   static route = {
@@ -27,16 +27,24 @@ export default class ContactDetailsScreen extends Component {
   state = {
     status: 'loading',
     message: '',
-    messages: [],
+    dataSource: new ListView.DataSource({
+      rowHasChanged: (r1, r2) => r1 !== r2,
+    }),
     anim: new Animated.Value(16)
   }
 
   async componentDidMount () {
+    await this._getMessageList()
+  }
+
+  _getMessageList = async () => {
     try {
-      const messages = await messagesList(this.props.contact)
+      const messagesResponse = await messagesList(this.props.contact)
+      const messages = messagesResponse.data
+      const messagesIds = messages.map((row, index) => index)
       this.setState({
         status: 'success',
-        messages: messages.data
+        dataSource: this.state.dataSource.cloneWithRows(messages, messagesIds)
       })
     } catch (e) {
       this.setState({
@@ -51,42 +59,52 @@ export default class ContactDetailsScreen extends Component {
       <View style={styles.container}>
 
         <View style={{flex: 1, justifyContent: 'space-between'}}>
-        <View style={{alignItems: 'center', paddingTop: 16}}>
-          <Image
-            style={styles.avatarImage}
-            source={{uri: contact.avatar_url}} />
-          <Text>{contact.first_name + ' ' + contact.last_name}</Text>
-          <Text>Mobile Number:  {contact.phone_mobile}</Text>
-          {
-            contact.email ? <Text>Email:  {contact.email}</Text> : null
-          }
-          {
-            contact.street_address ? (
-              <View>
-                <Text>Address: </Text>
-                <Text>{contact.street_address}</Text>
-                <Text>{contact.city}, {contact.state} {contact.zip_code}</Text>
-              </View>
-            ) : null
-          }
-        </View>
-
-        <View style={styles.messageContainer}>
-          <View style={styles.textInputContainer}>
-            <TextInput
-              placeholder='send message'
-              onChangeText={this._handleTextChange}
-              style={styles.textInput} />
+          <View style={{alignItems: 'center'}}>
+            <Image
+              style={styles.avatarImage}
+              source={{uri: contact.avatar_url}} />
+            <Text>{contact.first_name + ' ' + contact.last_name}</Text>
+            <Text>Mobile Number:  {contact.phone_mobile}</Text>
+            {
+              contact.email ? <Text>Email:  {contact.email}</Text> : null
+            }
+            {
+              contact.street_address ? (
+                <View>
+                  <Text>Address: </Text>
+                  <Text>{contact.street_address}</Text>
+                  <Text>{contact.city}, {contact.state} {contact.zip_code}</Text>
+                </View>
+              ) : null
+            }
           </View>
-          <TouchableOpacity
-            style={styles.sendButtonContainer}
-            onPress={this._handleSendMessage}>
-            <FontAwesome
-              name='send'
-              size={24}
-              style={{color: Colors.tintColor}}/>
-          </TouchableOpacity>
-        </View>
+
+          <View style={{flex: 1, marginVertical: Layout.padding}}>
+            <ListView
+              renderScrollComponent={props => <InvertibleScrollView {...props} inverted />}
+              dataSource={this.state.dataSource}
+              renderRow={this._renderRow}
+              style={{flex: 1}}
+            />
+          </View>
+
+          <View style={styles.messageContainer}>
+            <View style={styles.textInputContainer}>
+              <TextInput
+                ref={component => this._textInput = component}
+                placeholder='send message'
+                onChangeText={this._handleTextChange}
+                style={styles.textInput} />
+            </View>
+            <TouchableOpacity
+              style={styles.sendButtonContainer}
+              onPress={this._handleSendMessage}>
+              <FontAwesome
+                name='send'
+                size={24}
+                style={{color: Colors.tintColor}}/>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <KeyboardSpacer topSpacing={-Layout.tabBar.height}/>
@@ -95,47 +113,24 @@ export default class ContactDetailsScreen extends Component {
     )
   }
 
-  // <ScrollView stlye={{flex: 1}}>
-  //   {
-  //     this._showMessages()
-  //   }
-  // </ScrollView>
-
-  // _showMessages = () => {
-  //   const { status } = this.state
-  //   if (status === 'loading') {
-  //     return (
-  //     <LoadingScreen />
-  //     )
-  //   } else if (status === 'error') {
-  //     return (
-  //       <View><Text>'error'</Text></View>
-  //     )
-  //   } else {
-  //     return (
-  //       <View style={{flex: 1}}>
-  //         {
-  //           this.state.messages.map((message, i) => {
-  //             if (message.direction === 'inbound') {
-  //               return <InboundMessage key={i} message={message} />
-  //             } else if (message.direction === 'outbound') {
-  //               return <OutboundMessage key={i} message={message} />
-  //             }
-  //           })
-  //         }
-  //       </View>
-  //     )
-  //   }
-  // }
+  _renderRow = (message) => {
+    if (message.direction === 'inbound') {
+      return <InboundMessage key={message} message={message} />
+    } else if (message.direction === 'outbound') {
+      return <OutboundMessage key={message} message={message} />
+    }
+  }
 
   _handleTextChange = (message) => {
     this.setState({ message: message })
   }
 
   _handleSendMessage = async () => {
+    this._textInput.setNativeProps({text: ''})
     try {
       const messageSent = await sendMessage(this.props.contact, this.state.message)
       if (messageSent.success) {
+        await this._getMessageList()
         this.props.navigator.showLocalAlert('sent', {
           text: { color: '#000' },
           container: { backgroundColor: Colors.tintColor },
@@ -166,8 +161,9 @@ const styles = StyleSheet.create({
   messageContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    margin: 16,
-    backgroundColor: 'white'
+    backgroundColor: 'transparent',
+    paddingHorizontal: 16,
+    paddingBottom: 16
   },
   textInputContainer: {
     borderWidth: 1,
