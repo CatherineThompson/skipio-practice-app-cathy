@@ -5,11 +5,14 @@ import {
   StyleSheet,
   Image,
   TextInput,
-  TouchableOpacity
+  TouchableOpacity,
+  Keyboard,
+  Animated
 } from 'react-native'
 import { sendMessage } from '../api/contacts.js'
 import { FontAwesome } from '@expo/vector-icons'
 import Colors from '../constants/Colors'
+import Layout from '../constants/Layout'
 
 export default class ContactDetailsScreen extends Component {
   static route = {
@@ -19,7 +22,27 @@ export default class ContactDetailsScreen extends Component {
   }
 
   state = {
-    message: ''
+    message: '',
+    keyboardHeight: 0,
+    anim: new Animated.Value(16)
+  }
+
+  componentWillMount () {
+    this.keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', this._keyboardDidShow)
+    this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this._keyboardDidHide)
+  }
+
+  componentWillUnmount () {
+    this.keyboardDidShowListener.remove()
+    this.keyboardDidHideListener.remove()
+  }
+
+  _keyboardDidShow = (e) => {
+    Animated.timing(this.state.anim, {toValue: e.endCoordinates.height, duration: 250}).start()
+  }
+
+  _keyboardDidHide = (e) => {
+    Animated.timing(this.state.anim, {toValue: 16, duration: 250}).start()
   }
 
   render () {
@@ -47,7 +70,7 @@ export default class ContactDetailsScreen extends Component {
           }
         </View>
 
-        <View style={styles.messageContainer}>
+        <Animated.View style={[styles.messageContainer, {bottom: this.state.anim}]}>
           <View style={styles.textInputContainer}>
             <TextInput
               placeholder='send message'
@@ -62,7 +85,7 @@ export default class ContactDetailsScreen extends Component {
               size={24}
               style={{color: Colors.tintColor}}/>
           </TouchableOpacity>
-        </View>
+        </Animated.View>
 
       </View>
     )
@@ -93,6 +116,7 @@ export default class ContactDetailsScreen extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    justifyContent: 'space-between'
   },
   avatarImage: {
     width: 70,
@@ -107,6 +131,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     margin: 16,
+    position: 'absolute',
   },
   textInputContainer: {
     borderWidth: 1,

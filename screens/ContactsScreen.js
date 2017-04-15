@@ -7,6 +7,7 @@ import {
 } from 'react-native'
 import { fetchContacts } from '../api/contacts'
 import ContactContainer from '../components/ContactContainer'
+import LoadingScreen from '../components/LoadingScreen'
 
 export default class ContactsScreen extends React.Component {
   static route = {
@@ -39,7 +40,7 @@ export default class ContactsScreen extends React.Component {
     const { status, contactsList } = this.state
     if (status === 'loading') {
       return (
-        <View><Text>'loading'</Text></View>
+      <LoadingScreen />
       )
     } else if (status === 'error') {
       return (
