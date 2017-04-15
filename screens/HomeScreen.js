@@ -11,7 +11,7 @@ import Colors from '../constants/Colors'
 export default class HomeScreen extends Component {
   static route = {
     navigationBar: {
-      visible: false,
+      visible: false
     }
   }
 

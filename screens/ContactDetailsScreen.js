@@ -6,13 +6,16 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
-  Keyboard,
-  Animated
+  Animated,
+  ScrollView
 } from 'react-native'
-import { sendMessage } from '../api/contacts.js'
+import { sendMessage, messagesList } from '../api/contacts'
 import { FontAwesome } from '@expo/vector-icons'
 import Colors from '../constants/Colors'
+import LoadingScreen from '../components/LoadingScreen'
+import { InboundMessage, OutboundMessage } from '../components/MessageBubble'
 import Layout from '../constants/Layout'
+import KeyboardSpacer from 'react-native-keyboard-spacer'
 
 export default class ContactDetailsScreen extends Component {
   static route = {
@@ -22,27 +25,24 @@ export default class ContactDetailsScreen extends Component {
   }
 
   state = {
+    status: 'loading',
     message: '',
-    keyboardHeight: 0,
+    messages: [],
     anim: new Animated.Value(16)
   }
 
-  componentWillMount () {
-    this.keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', this._keyboardDidShow)
-    this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this._keyboardDidHide)
-  }
-
-  componentWillUnmount () {
-    this.keyboardDidShowListener.remove()
-    this.keyboardDidHideListener.remove()
-  }
-
-  _keyboardDidShow = (e) => {
-    Animated.timing(this.state.anim, {toValue: e.endCoordinates.height, duration: 250}).start()
-  }
-
-  _keyboardDidHide = (e) => {
-    Animated.timing(this.state.anim, {toValue: 16, duration: 250}).start()
+  async componentDidMount () {
+    try {
+      const messages = await messagesList(this.props.contact)
+      this.setState({
+        status: 'success',
+        messages: messages.data
+      })
+    } catch (e) {
+      this.setState({
+        status: 'error'
+      })
+    }
   }
 
   render () {
@@ -50,7 +50,8 @@ export default class ContactDetailsScreen extends Component {
     return (
       <View style={styles.container}>
 
-        <View>
+        <View style={{flex: 1, justifyContent: 'space-between'}}>
+        <View style={{alignItems: 'center', paddingTop: 16}}>
           <Image
             style={styles.avatarImage}
             source={{uri: contact.avatar_url}} />
@@ -70,7 +71,7 @@ export default class ContactDetailsScreen extends Component {
           }
         </View>
 
-        <Animated.View style={[styles.messageContainer, {bottom: this.state.anim}]}>
+        <View style={styles.messageContainer}>
           <View style={styles.textInputContainer}>
             <TextInput
               placeholder='send message'
@@ -85,11 +86,47 @@ export default class ContactDetailsScreen extends Component {
               size={24}
               style={{color: Colors.tintColor}}/>
           </TouchableOpacity>
-        </Animated.View>
+        </View>
+        </View>
+
+        <KeyboardSpacer topSpacing={-Layout.tabBar.height}/>
 
       </View>
     )
   }
+
+  // <ScrollView stlye={{flex: 1}}>
+  //   {
+  //     this._showMessages()
+  //   }
+  // </ScrollView>
+
+  // _showMessages = () => {
+  //   const { status } = this.state
+  //   if (status === 'loading') {
+  //     return (
+  //     <LoadingScreen />
+  //     )
+  //   } else if (status === 'error') {
+  //     return (
+  //       <View><Text>'error'</Text></View>
+  //     )
+  //   } else {
+  //     return (
+  //       <View style={{flex: 1}}>
+  //         {
+  //           this.state.messages.map((message, i) => {
+  //             if (message.direction === 'inbound') {
+  //               return <InboundMessage key={i} message={message} />
+  //             } else if (message.direction === 'outbound') {
+  //               return <OutboundMessage key={i} message={message} />
+  //             }
+  //           })
+  //         }
+  //       </View>
+  //     )
+  //   }
+  // }
 
   _handleTextChange = (message) => {
     this.setState({ message: message })
@@ -116,7 +153,6 @@ export default class ContactDetailsScreen extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'space-between'
   },
   avatarImage: {
     width: 70,
@@ -131,7 +167,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     margin: 16,
-    position: 'absolute',
+    backgroundColor: 'white'
   },
   textInputContainer: {
     borderWidth: 1,

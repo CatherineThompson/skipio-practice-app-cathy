@@ -35,6 +35,18 @@ export function sendMessage (contact, message) {
     .then(status)
 }
 
+export function messagesList (contact) {
+  return fetch(BASE_URL + '/api/v1/contacts/' + contact.id + '/messages' +
+    '?' + 'token=' + TOKEN,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    })
+    .then(status)
+}
+
 const status = async (response) => {
   if (response.status >= 200 && response.status < 300) {
     return response.json()
