@@ -32,7 +32,6 @@ export default class ContactsScreen extends React.Component {
       this.setState({
         status: 'error'
       })
-      console.log(e.message)
     }
   }
 

@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import {
   View,
-  Text,
   StyleSheet,
   Image,
   TextInput,
@@ -9,13 +8,15 @@ import {
   Animated,
   ListView
 } from 'react-native'
-import { sendMessage, messagesList } from '../api/contacts'
 import { FontAwesome } from '@expo/vector-icons'
-import Colors from '../constants/Colors'
-import { InboundMessage, OutboundMessage } from '../components/MessageBubble'
-import Layout from '../constants/Layout'
 import KeyboardSpacer from 'react-native-keyboard-spacer'
 import InvertibleScrollView from 'react-native-invertible-scroll-view'
+
+import Colors from '../constants/Colors'
+import Layout from '../constants/Layout'
+import { sendMessage, messagesList } from '../api/contacts'
+import { InboundMessage, OutboundMessage } from '../components/MessageBubble'
+import FieldContainer from '../components/FieldContainer'
 
 export default class ContactDetailsScreen extends Component {
   static route = {
@@ -59,23 +60,16 @@ export default class ContactDetailsScreen extends Component {
       <View style={styles.container}>
 
         <View style={{flex: 1, justifyContent: 'space-between'}}>
-          <View style={{alignItems: 'center'}}>
+          <View>
             <Image
               style={styles.avatarImage}
               source={{uri: contact.avatar_url}} />
-            <Text>{contact.first_name + ' ' + contact.last_name}</Text>
-            <Text>Mobile Number:  {contact.phone_mobile}</Text>
+            <FieldContainer field='Mobile Number' data={contact.phone_mobile} />
             {
-              contact.email ? <Text>Email:  {contact.email}</Text> : null
+              contact.email ? <FieldContainer field='Email' data={contact.email} /> : null
             }
             {
-              contact.street_address ? (
-                <View>
-                  <Text>Address: </Text>
-                  <Text>{contact.street_address}</Text>
-                  <Text>{contact.city}, {contact.state} {contact.zip_code}</Text>
-                </View>
-              ) : null
+              contact.street_address ? <FieldContainer field='Address' data={contact} /> : null
             }
           </View>
 
@@ -156,7 +150,8 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     borderWidth: 1,
     borderRadius: 35,
-    borderColor: Colors.backgroudGray
+    borderColor: Colors.backgroudGray,
+    alignSelf: 'center'
   },
   messageContainer: {
     flexDirection: 'row',
